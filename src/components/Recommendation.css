@@ -1,0 +1,63 @@
+.recommendation-section {
+  margin: 3rem 0;
+  padding: 0 20px;
+}
+
+.recommendation-section h2 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.recommendation-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+}
+
+.recommendation-scroll {
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #667eea #f0f0f0;
+}
+
+.recommendation-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.recommendation-scroll::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.recommendation-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+}
+
+.recommendation-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(250px, 1fr);
+  gap: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .recommendation-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .recommendation-grid {
+    grid-auto-columns: minmax(200px, 1fr);
+  }
+}
