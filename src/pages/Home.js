@@ -5,7 +5,7 @@ import Recommendation from '../components/Recommendation';
 import ProductCard from '../components/ProductCard';
 import './Home.css';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const Home = () => {
   const [recommendedProducts, setRecommendedProducts] = useState([]);

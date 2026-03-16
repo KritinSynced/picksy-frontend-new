@@ -5,7 +5,7 @@ import { FaUser, FaHistory, FaHeart, FaShoppingBag } from 'react-icons/fa';
 import ProductCard from '../components/ProductCard';
 import './Profile.css';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const Profile = () => {
   const { userId } = useParams();
