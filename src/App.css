@@ -321,3 +321,98 @@ body {
   font-size: 1.1rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+/* Error banner */
+.error-banner {
+  margin: 20px 0;
+}
+
+.error-message {
+  text-align: center;
+  color: #dc3545;
+  padding: 15px;
+  font-size: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  margin: 10px 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #dc3545;
+}
+
+/* Empty states */
+.empty-message {
+  text-align: center;
+  padding: 40px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  color: #666;
+  font-size: 1rem;
+}
+
+/* Browse all button */
+.browse-all-btn {
+  padding: 12px 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: transform 0.3s;
+}
+
+.browse-all-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Back button */
+.back-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 20px;
+  padding: 10px 0;
+}
+
+.back-btn:hover {
+  color: #764ba2;
+}
+
+/* Error page */
+.error-page {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.back-home-btn {
+  padding: 12px 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Shipping note */
+.shipping-note {
+  background: #e8f4fd;
+  color: #0369a1;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin: 10px 0;
+  text-align: center;
+}

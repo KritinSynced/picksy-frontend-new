@@ -2,7 +2,7 @@ import React from 'react';
 import ProductCard from './ProductCard';
 import './Recommendation.css';
 
-const Recommendation = ({ title, products, loading }) => {
+const Recommendation = ({ title, products, loading, error }) => {
   if (loading) {
     return (
       <div className="recommendation-section">
@@ -14,8 +14,22 @@ const Recommendation = ({ title, products, loading }) => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="recommendation-section">
+        <h2>{title}</h2>
+        <div className="error-message">{error}</div>
+      </div>
+    );
+  }
+
   if (!products || products.length === 0) {
-    return null;
+    return (
+      <div className="recommendation-section">
+        <h2>{title}</h2>
+        <div className="empty-message">No products to display</div>
+      </div>
+    );
   }
 
   return (

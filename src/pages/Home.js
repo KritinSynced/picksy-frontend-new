@@ -15,9 +15,15 @@ const Home = () => {
   const [loading, setLoading] = useState({
     recommendations: true,
     trending: true,
-    search: false
+    search: false,
+    category: false
   });
-  const [error, setError] = useState(null);
+  const [error, setError] = useState({
+    recommendations: null,
+    trending: null,
+    search: null,
+    category: null
+  });
   
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -43,51 +49,79 @@ const Home = () => {
 
   const fetchRecommendations = async () => {
     try {
+      setLoading(prev => ({ ...prev, recommendations: true }));
+      setError(prev => ({ ...prev, recommendations: null }));
+      
       // For demo, using a default user ID
       const userId = 'guest';
       const response = await axios.get(`${API_URL}/recommendations/user/${userId}`);
-      setRecommendedProducts(response.data);
-      setLoading(prev => ({ ...prev, recommendations: false }));
+      setRecommendedProducts(response.data || []);
     } catch (err) {
-      setError('Failed to load recommendations');
+      console.error('Failed to load recommendations:', err);
+      setError(prev => ({ 
+        ...prev, 
+        recommendations: 'Failed to load recommendations. Please try again later.' 
+      }));
+      setRecommendedProducts([]);
+    } finally {
       setLoading(prev => ({ ...prev, recommendations: false }));
     }
   };
 
   const fetchTrending = async () => {
     try {
+      setLoading(prev => ({ ...prev, trending: true }));
+      setError(prev => ({ ...prev, trending: null }));
+      
       const response = await axios.get(`${API_URL}/recommendations/trending`);
-      setTrendingProducts(response.data);
-      setLoading(prev => ({ ...prev, trending: false }));
+      setTrendingProducts(response.data || []);
     } catch (err) {
-      setError('Failed to load trending products');
+      console.error('Failed to load trending products:', err);
+      setError(prev => ({ 
+        ...prev, 
+        trending: 'Failed to load trending products. Please try again later.' 
+      }));
+      setTrendingProducts([]);
+    } finally {
       setLoading(prev => ({ ...prev, trending: false }));
     }
   };
 
   const searchProducts = async (query) => {
-    setLoading(prev => ({ ...prev, search: true }));
-    setError(null);
     try {
-      const response = await axios.get(`${API_URL}/products?search=${query}`);
-      setSearchResults(response.data);
-      setLoading(prev => ({ ...prev, search: false }));
+      setLoading(prev => ({ ...prev, search: true }));
+      setError(prev => ({ ...prev, search: null }));
+      
+      const response = await axios.get(`${API_URL}/products?search=${encodeURIComponent(query)}`);
+      setSearchResults(response.data?.products || response.data || []);
     } catch (err) {
-      setError('Failed to search products');
+      console.error('Failed to search products:', err);
+      setError(prev => ({ 
+        ...prev, 
+        search: 'Failed to search products. Please try again later.' 
+      }));
+      setSearchResults([]);
+    } finally {
       setLoading(prev => ({ ...prev, search: false }));
     }
   };
 
   const fetchProductsByCategory = async (category) => {
-    setLoading(prev => ({ ...prev, search: true }));
-    setError(null);
     try {
-      const response = await axios.get(`${API_URL}/products?category=${category}`);
-      setSearchResults(response.data);
-      setLoading(prev => ({ ...prev, search: false }));
+      setLoading(prev => ({ ...prev, category: true }));
+      setError(prev => ({ ...prev, category: null }));
+      
+      const response = await axios.get(`${API_URL}/products?category=${encodeURIComponent(category)}`);
+      setSearchResults(response.data?.products || response.data || []);
     } catch (err) {
-      setError('Failed to load products');
-      setLoading(prev => ({ ...prev, search: false }));
+      console.error('Failed to load category products:', err);
+      setError(prev => ({ 
+        ...prev, 
+        category: 'Failed to load products in this category.' 
+      }));
+      setSearchResults([]);
+    } finally {
+      setLoading(prev => ({ ...prev, category: false }));
     }
   };
 
@@ -114,7 +148,12 @@ const Home = () => {
       'appliances': 'Appliances',
       'furniture': 'Furniture'
     };
-    return categoryNames[category] || category.charAt(0).toUpperCase() + category.slice(1);
+    return categoryNames[category] || category?.charAt(0).toUpperCase() + category?.slice(1) || 'Category';
+  };
+
+  // Handle category card click
+  const handleCategoryClick = (category) => {
+    window.location.href = `/?category=${category}`;
   };
 
   return (
@@ -127,7 +166,14 @@ const Home = () => {
       </div>
 
       <div className="container">
-        {error && <div className="error-message">{error}</div>}
+        {/* Global error message */}
+        {Object.values(error).some(e => e) && (
+          <div className="error-banner">
+            {Object.entries(error).map(([key, msg]) => msg && (
+              <div key={key} className="error-message">{msg}</div>
+            ))}
+          </div>
+        )}
 
         {searchQuery ? (
           <section className="search-results">
@@ -138,11 +184,17 @@ const Home = () => {
               </div>
             ) : (
               <div className="products-grid">
-                {searchResults.map(product => (
-                  <ProductCard key={product._id} product={product} />
-                ))}
-                {searchResults.length === 0 && (
-                  <p className="no-results">No products found matching your search.</p>
+                {searchResults.length > 0 ? (
+                  searchResults.map(product => (
+                    <ProductCard key={product._id} product={product} />
+                  ))
+                ) : (
+                  <div className="no-results">
+                    <p>No products found matching "{searchQuery}".</p>
+                    <button onClick={() => window.location.href = '/'} className="browse-all-btn">
+                      Browse All Products
+                    </button>
+                  </div>
                 )}
               </div>
             )}
@@ -150,17 +202,23 @@ const Home = () => {
         ) : selectedCategory ? (
           <section className="category-results">
             <h2>{getCategoryDisplayName(selectedCategory)}</h2>
-            {loading.search ? (
+            {loading.category ? (
               <div className="loading-spinner">
                 <div className="spinner"></div>
               </div>
             ) : (
               <div className="products-grid">
-                {searchResults.map(product => (
-                  <ProductCard key={product._id} product={product} />
-                ))}
-                {searchResults.length === 0 && (
-                  <p className="no-results">No products found in this category.</p>
+                {searchResults.length > 0 ? (
+                  searchResults.map(product => (
+                    <ProductCard key={product._id} product={product} />
+                  ))
+                ) : (
+                  <div className="no-results">
+                    <p>No products found in this category.</p>
+                    <button onClick={() => window.location.href = '/'} className="browse-all-btn">
+                      Browse All Categories
+                    </button>
+                  </div>
                 )}
               </div>
             )}
@@ -171,40 +229,78 @@ const Home = () => {
               title="Recommended for You" 
               products={recommendedProducts}
               loading={loading.recommendations}
+              error={error.recommendations}
             />
             
             <Recommendation 
               title="Trending Now" 
               products={trendingProducts}
               loading={loading.trending}
+              error={error.trending}
             />
 
             {/* Popular Categories Section */}
             <section className="popular-categories">
               <h2>Shop by Category</h2>
               <div className="categories-grid">
-                <div className="category-card" onClick={() => window.location.href = '/?category=electronics'}>
-                  <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=200&h=200&fit=crop" alt="Electronics" />
+                <div className="category-card" onClick={() => handleCategoryClick('electronics')}>
+                  <img 
+                    src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=200&h=200&fit=crop" 
+                    alt="Electronics"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/200x200?text=Electronics';
+                    }}
+                  />
                   <h3>Electronics</h3>
                 </div>
-                <div className="category-card" onClick={() => window.location.href = '/?category=smartphones'}>
-                  <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=200&h=200&fit=crop" alt="Smartphones" />
+                <div className="category-card" onClick={() => handleCategoryClick('smartphones')}>
+                  <img 
+                    src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=200&h=200&fit=crop" 
+                    alt="Smartphones"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/200x200?text=Smartphones';
+                    }}
+                  />
                   <h3>Smartphones</h3>
                 </div>
-                <div className="category-card" onClick={() => window.location.href = '/?category=laptops'}>
-                  <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop" alt="Laptops" />
+                <div className="category-card" onClick={() => handleCategoryClick('laptops')}>
+                  <img 
+                    src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop" 
+                    alt="Laptops"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/200x200?text=Laptops';
+                    }}
+                  />
                   <h3>Laptops</h3>
                 </div>
-                <div className="category-card" onClick={() => window.location.href = '/?category=audio'}>
-                  <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop" alt="Audio" />
+                <div className="category-card" onClick={() => handleCategoryClick('audio')}>
+                  <img 
+                    src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop" 
+                    alt="Audio"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/200x200?text=Audio';
+                    }}
+                  />
                   <h3>Audio</h3>
                 </div>
-                <div className="category-card" onClick={() => window.location.href = '/?category=footwear'}>
-                  <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop" alt="Footwear" />
+                <div className="category-card" onClick={() => handleCategoryClick('footwear')}>
+                  <img 
+                    src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop" 
+                    alt="Footwear"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/200x200?text=Footwear';
+                    }}
+                  />
                   <h3>Footwear</h3>
                 </div>
-                <div className="category-card" onClick={() => window.location.href = '/?category=clothing'}>
-                  <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=200&h=200&fit=crop" alt="Clothing" />
+                <div className="category-card" onClick={() => handleCategoryClick('clothing')}>
+                  <img 
+                    src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=200&h=200&fit=crop" 
+                    alt="Clothing"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/200x200?text=Clothing';
+                    }}
+                  />
                   <h3>Clothing</h3>
                 </div>
               </div>

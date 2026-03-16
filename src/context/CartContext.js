@@ -19,7 +19,12 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
+      try {
+        setCartItems(JSON.parse(savedCart));
+      } catch (error) {
+        console.error('Failed to parse cart from localStorage:', error);
+        localStorage.removeItem('cart');
+      }
     }
   }, []);
 
@@ -28,15 +33,20 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
     
     // Update cart count
-    const count = cartItems.reduce((total, item) => total + item.quantity, 0);
+    const count = cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
     setCartCount(count);
     
     // Update cart total
-    const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total = cartItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 1)), 0);
     setCartTotal(total);
   }, [cartItems]);
 
   const addToCart = (product, quantity = 1) => {
+    if (!product || !product._id) {
+      console.error('Invalid product:', product);
+      return;
+    }
+
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item._id === product._id);
       
@@ -44,14 +54,21 @@ export const CartProvider = ({ children }) => {
         // Increase quantity if item already exists
         return prevItems.map(item =>
           item._id === product._id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: (item.quantity || 1) + quantity }
             : item
         );
       } else {
-        // Add new item
-        return [...prevItems, { ...product, quantity }];
+        // Add new item with safe defaults
+        return [...prevItems, { 
+          ...product, 
+          quantity: quantity,
+          images: product.images || ['https://via.placeholder.com/100x100?text=No+Image']
+        }];
       }
     });
+
+    // Return success for feedback
+    return true;
   };
 
   const removeFromCart = (productId) => {
